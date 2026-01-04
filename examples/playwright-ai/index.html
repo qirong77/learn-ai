@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas 绘制</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        canvas {
+            border: 2px solid #333;
+            cursor: crosshair;
+            margin-bottom: 20px;
+        }
+        canvas.focused {
+            border-color: #007bff;
+            box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="status">未聚焦</h1>
+    <canvas id="myCanvas" width="600" height="400"></canvas>
+    <button id="drawButton">开始作画</button>
+</body>
+<script>
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+    const statusTitle = document.getElementById('status');
+    
+    let isFocused = false;
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    // 更新状态标题
+    function updateStatus(focused) {
+        isFocused = focused;
+        if (focused) {
+            statusTitle.textContent = '已聚焦';
+            canvas.classList.add('focused');
+        } else {
+            statusTitle.textContent = '未聚焦';
+            canvas.classList.remove('focused');
+        }
+    }
+
+    // 点击 canvas 时聚焦
+    canvas.addEventListener('click', (e) => {
+        updateStatus(true);
+    });
+
+    // 鼠标离开 canvas 时失焦
+    canvas.addEventListener('mouseleave', (e) => {
+        updateStatus(false);
+        isDrawing = false;
+    });
+
+    // 鼠标按下开始绘制
+    canvas.addEventListener('mousedown', (e) => {
+        if (isFocused) {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            lastX = e.clientX - rect.left;
+            lastY = e.clientY - rect.top;
+        }
+    });
+
+    // 鼠标抬起停止绘制
+    canvas.addEventListener('mouseup', () => {
+        isDrawing = false;
+    });
+
+    // 鼠标移动时绘制线条
+    canvas.addEventListener('mousemove', (e) => {
+        if (isFocused && isDrawing) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            lastX = x;
+            lastY = y;
+        }
+    });
+
+    // 监听全局键盘事件（保留原有功能）
+    document.addEventListener('keydown', (event) => {
+        console.log(`Key pressed: ${event.key}`);
+    });
+</script>
+</html>
